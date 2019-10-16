@@ -1,0 +1,5 @@
+python3 -m venv balanceenv
+source balanceenv/bin/activate
+python3 -m pip install --upgrade pip
+pip install Django==2.2.6
+
