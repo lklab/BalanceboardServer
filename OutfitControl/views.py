@@ -8,7 +8,7 @@ import json
 @csrf_exempt
 def fetchCommand(request) :
 	if request.method == "GET" :
-		return HttpResponse("hello plaything, it works!!!")
+		return HttpResponse("hello outfit, it works!!!")
 	else :
 		return HttpResponse("this URL only works by GET")
 
