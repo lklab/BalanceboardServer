@@ -5,6 +5,9 @@ from django.views.decorators.csrf import csrf_exempt
 
 import json
 
+import Main.Globals as Globals
+import Main.BalanceboardManager as BalanceboardManager
+
 @csrf_exempt
 def getOutfitList(request) :
 	if request.method == "GET" :
