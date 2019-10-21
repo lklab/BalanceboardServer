@@ -4,6 +4,11 @@ import os
 import datetime
 from django.utils import timezone
 
+import Main.Globals as Globals
+
+outfitStatusList = {}
+outfitCommandList = {}
+
 def getOutfitId(uuid) :
 	if len(uuid) > 64 :
 		uuid = uuid[0:64]
@@ -18,6 +23,86 @@ def getOutfitId(uuid) :
 		outfitId.id = OutfitId.objects.count()
 		outfitId.save()
 		return outfitId.id
+
+def updateOutfitStatusList(status) :
+	_id = status["id"]
+
+	if not _id in outfitStatusList :
+		outfitCommandList[_id] = {}
+		outfitCommandList[_id]["exercise"]     = status["exercise"]
+		outfitCommandList[_id]["level"]        = status["level"]
+		outfitCommandList[_id]["signalPeriod"] = status["signalPeriod"]
+		outfitCommandList[_id]["changeTime"]   = status["changeTime"]
+		outfitCommandList[_id]["startFlag"]    = False
+
+	outfitStatusList[_id] = status
+
+def getCommandCode(_id, clearStartFlag=False) :
+	isParameterEquals = False
+
+	# is status equals
+	if outfitStatusList[_id]["exercise"] == outfitCommandList[_id]["exercise"] and \
+		outfitStatusList[_id]["level"] == outfitCommandList[_id]["level"] :
+		isStatusEquals = True
+	else :
+		isStatusEquals = False
+
+	# is start flag
+	isStartFlag = outfitCommandList[_id]["startFlag"]
+
+	# is command's exercise is none
+	if outfitCommandList[_id]["exercise"] == Globals.EXERCISE_NONE :
+		isExerciseNoneCommand = True
+	else :
+		isExerciseNoneCommand = False
+
+	# is parameter equals
+	if outfitStatusList[_id]["signalPeriod"] == outfitCommandList[_id]["signalPeriod"] and \
+		outfitStatusList[_id]["changeTime"] == outfitCommandList[_id]["changeTime"] :
+		isParameterEquals = True
+	else :
+		isParameterEquals = False
+
+	# calculate command code
+	if not isExerciseNoneCommand and (not isStatusEquals or isStartFlag) :
+		commandCode = Globals.COMMAND_START
+	elif not isStatusEquals :
+		commandCode = Globals.COMMAND_STOP
+	elif not isParameterEquals :
+		commandCode = Globals.COMMAND_PARAMETER
+	else :
+		commandCode = Globals.COMMAND_NONE
+
+	# clear start flag
+	if clearStartFlag :
+		outfitCommandList[_id]["startFlag"] = False
+
+	return commandCode
+
+def getCommand(_id) :
+	command = {}
+	command["type"]         = getCommandCode(_id, clearStartFlag=True)
+	command["exercise"]     = outfitCommandList[_id]["exercise"]
+	command["level"]        = outfitCommandList[_id]["level"]
+	command["signalPeriod"] = outfitCommandList[_id]["signalPeriod"]
+	command["changeTime"]   = outfitCommandList[_id]["changeTime"]
+	return command
+
+def getOutfitStatusList() :
+	return outfitStatusList
+
+def setCommand(command) :
+	_id = command["id"]
+
+	if command["type"] is Globals.COMMAND_START :
+		outfitCommandList[_id]["exercise"]     = command["exercise"]
+		outfitCommandList[_id]["level"]        = command["level"]
+		outfitCommandList[_id]["signalPeriod"] = command["signalPeriod"]
+		outfitCommandList[_id]["changeTime"]   = command["changeTime"]
+		outfitCommandList[_id]["startFlag"]    = True
+	else : # command["type"] is Globals.COMMAND_STOP
+		outfitCommandList[_id]["exercise"]     = Globals.EXERCISE_NONE
+		outfitCommandList[_id]["startFlag"]    = False
 
 def saveResultData(resultDictionary) :
 	# check result log directory

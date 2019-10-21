@@ -4,6 +4,7 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
 import json
+import traceback
 
 import Main.Globals as Globals
 import Main.BalanceboardManager as BalanceboardManager
@@ -11,22 +12,33 @@ import Main.BalanceboardManager as BalanceboardManager
 @csrf_exempt
 def getOutfitList(request) :
 	if request.method == "GET" :
-		outfitList = {}
-		outfitList["outfitDataList"] = []
-		outfitList["outfitDataList"].append({"id" : "1", "status" : "idle", "signalPeriod" : "1000", "changeTime" : "5000"})
-		outfitList["outfitDataList"].append({"id" : "2", "status" : "bi/4/3", "signalPeriod" : "1000", "changeTime" : "5000"})
-		outfitList["outfitDataList"].append({"id" : "3", "status" : "bi/1/2", "signalPeriod" : "1000", "changeTime" : "5000"})
-		outfitList["outfitDataList"].append({"id" : "4", "status" : "bi/5/323", "signalPeriod" : "1000", "changeTime" : "5000"})
+		print("[Application log] getOutfitList(): " + str(request.GET))
 
-		return HttpResponse(json.dumps(outfitList))
+		try :
+			return HttpResponse(json.dumps(BalanceboardManager.getOutfitStatusList()))
+
+		except :
+			print("requestId is failed. traceback:")
+			traceback.print_exc()
+			return HttpResponse("Parameter error", status=400)
+
 	else :
-		return HttpResponse("this URL only works by GET")
+		return HttpResponse("This URL cannot process method " + request.method, status=400)
 
 @csrf_exempt
 def command(request) :
 	if request.method == "POST" :
-		data = json.loads(request.body)
-		print("received data: " + str(data))
-		return HttpResponse("")
+		print("[Application log] command(): " + str(request.body))
+
+		try :
+			command = json.loads(request.body)
+			BalanceboardManager.setCommand(command)
+			return HttpResponse("")
+
+		except :
+			print("updateStatus is failed. traceback:")
+			traceback.print_exc()
+			return HttpResponse("Parameter error", status=400)
+
 	else :
-		return HttpResponse("")
+		return HttpResponse("This URL cannot process method " + request.method, status=400)

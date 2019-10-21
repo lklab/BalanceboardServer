@@ -4,6 +4,7 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 
 import json
+import traceback
 
 import Main.Globals as Globals
 import Main.BalanceboardManager as BalanceboardManager
@@ -22,10 +23,10 @@ def requestId(request) :
 		except :
 			print("requestId is failed. traceback:")
 			traceback.print_exc()
-			return HttpResponse("") # TODO report ERROR
+			return HttpResponse("Parameter error", status=400)
 
 	else :
-		return HttpResponse("") # TODO report ERROR
+		return HttpResponse("This URL cannot process method " + request.method, status=400)
 
 @csrf_exempt
 def updateStatus(request) :
@@ -34,24 +35,22 @@ def updateStatus(request) :
 
 		try :
 			outfitStatus = json.loads(request.body)
-
-			# TODO update outfit status and calculate new command
-			# print("received data: " + str(outfitStatus))
-			# print("outfit exercise: " + outfitStatus["exercise"])
-			# print("outfit level: " + str(outfitStatus["level"]))
-			# print("outfit motion: " + str(outfitStatus["motion"]))
+			BalanceboardManager.updateOutfitStatusList(outfitStatus)
 
 			newCommandData = {}
-			newCommandData["newCommand"] = "1"
+			if BalanceboardManager.getCommandCode(outfitStatus["id"]) == Globals.COMMAND_NONE :
+				newCommandData["newCommand"] = 0
+			else :
+				newCommandData["newCommand"] = 1
 			return HttpResponse(json.dumps(newCommandData))
 
 		except :
 			print("updateStatus is failed. traceback:")
 			traceback.print_exc()
-			return HttpResponse("") # TODO report ERROR
+			return HttpResponse("Parameter error", status=400)
 
 	else :
-		return HttpResponse("") # TODO report ERROR
+		return HttpResponse("This URL cannot process method " + request.method, status=400)
 
 @csrf_exempt
 def fetchCommand(request) :
@@ -59,22 +58,16 @@ def fetchCommand(request) :
 		print("[Application log] fetchCommand(): " + str(request.GET))
 
 		try :
-			# TODO calculate command dictionary, this is test code
-			response = {}
-			response["type"] = Globals.COMMAND_START
-			response["exercise"] = Globals.EXERCISE_BI
-			response["level"] = 5
-			response["signalPeriod"] = 500
-			response["changeTime"] = 2
+			response = BalanceboardManager.getCommand(request.GET["id"])
 			return HttpResponse(json.dumps(response))
 
 		except :
 			print("fetchCommand is failed. traceback:")
 			traceback.print_exc()
-			return HttpResponse("") # TODO report ERROR
+			return HttpResponse("Parameter error", status=400)
 
 	else :
-		return HttpResponse("") # TODO report ERROR
+		return HttpResponse("This URL cannot process method " + request.method, status=400)
 
 @csrf_exempt
 def submitResult(request) :
@@ -84,20 +77,12 @@ def submitResult(request) :
 		try :
 			resultDictionary = json.loads(request.body)
 			BalanceboardManager.saveResultData(resultDictionary)
-
-			# TODO update outfit status and calculate new command
-			print("received data: " + str(resultDictionary))
-			print("result id: " + resultDictionary["id"])
-			print("result exercise: " + resultDictionary["exercise"])
-			print("result level: " + str(resultDictionary["level"]))
-			print("result result: " + resultDictionary["result"])
-
 			return HttpResponse("")
 
 		except :
 			print("submitResult is failed. traceback:")
 			traceback.print_exc()
-			return HttpResponse("") # TODO report ERROR
+			return HttpResponse("Parameter error", status=400)
 
 	else :
-		return HttpResponse("") # TODO report ERROR
+		return HttpResponse("This URL cannot process method " + request.method, status=400)
