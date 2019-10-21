@@ -1,13 +1,15 @@
 from .models import OutfitId, ResultData
 
 import os
-import datetime
+import datetime, time
+import threading
 from django.utils import timezone
 
 import Main.Globals as Globals
 
 outfitStatusList = {}
 outfitCommandList = {}
+outfitLastReportTime = {}
 
 def getOutfitId(uuid) :
 	if len(uuid) > 64 :
@@ -36,6 +38,7 @@ def updateOutfitStatusList(status) :
 		outfitCommandList[_id]["startFlag"]    = False
 
 	outfitStatusList[_id] = status
+	outfitLastReportTime[_id] = time.time()
 
 def getCommandCode(_id, clearStartFlag=False) :
 	isParameterEquals = False
@@ -135,4 +138,23 @@ def saveResultData(resultDictionary) :
 	resultData.fileName = fileName
 	resultData.save()
 
+def outfitMonitoringTask() :
+	# process
+	currentTime = time.time()
+	disconnectedOutfitList = []
+
+	for _id, reportTime in outfitLastReportTime.items() :
+		if reportTime + 5.0 < currentTime :
+			disconnectedOutfitList.append(_id)
+
+	for _id in disconnectedOutfitList :
+		del outfitStatusList[_id]
+		del outfitCommandList[_id]
+		del outfitLastReportTime[_id]
+		print("[Application log] outfit " + str(_id) + " is disconnected.")
+
+	# register next task
+	threading.Timer(5, outfitMonitoringTask).start()
+
+outfitMonitoringTask()
 print("Balanceboard manager is started.")
