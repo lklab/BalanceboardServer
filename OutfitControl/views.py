@@ -58,7 +58,7 @@ def fetchCommand(request) :
 		print("[Application log] fetchCommand(): " + str(request.GET))
 
 		try :
-			response = BalanceboardManager.getCommand(request.GET["id"])
+			response = BalanceboardManager.getCommand(int(request.GET["id"]))
 			return HttpResponse(json.dumps(response))
 
 		except :

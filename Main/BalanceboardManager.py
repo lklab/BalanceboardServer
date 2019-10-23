@@ -105,6 +105,7 @@ def setCommand(command) :
 		outfitCommandList[_id]["startFlag"]    = True
 	else : # command["type"] is Globals.COMMAND_STOP
 		outfitCommandList[_id]["exercise"]     = Globals.EXERCISE_NONE
+		outfitCommandList[_id]["level"]        = 0
 		outfitCommandList[_id]["startFlag"]    = False
 
 def saveResultData(resultDictionary) :
