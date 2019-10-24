@@ -18,7 +18,7 @@ def getOutfitList(request) :
 			return HttpResponse(json.dumps(BalanceboardManager.getOutfitStatusList()))
 
 		except :
-			print("requestId is failed. traceback:")
+			print("getOutfitList is failed. traceback:")
 			traceback.print_exc()
 			return HttpResponse("Parameter error", status=400)
 
@@ -31,12 +31,12 @@ def command(request) :
 		print("[Application log] command(): " + str(request.body))
 
 		try :
-			command = json.loads(request.body)
-			BalanceboardManager.setCommand(command)
+			commandData = json.loads(request.body)
+			BalanceboardManager.setCommand(commandData)
 			return HttpResponse("")
 
 		except :
-			print("updateStatus is failed. traceback:")
+			print("command is failed. traceback:")
 			traceback.print_exc()
 			return HttpResponse("Parameter error", status=400)
 

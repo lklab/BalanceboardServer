@@ -97,16 +97,19 @@ def getOutfitStatusList() :
 def setCommand(command) :
 	_id = command["id"]
 
-	if command["type"] is Globals.COMMAND_START :
-		outfitCommandList[_id]["exercise"]     = command["exercise"]
-		outfitCommandList[_id]["level"]        = command["level"]
-		outfitCommandList[_id]["signalPeriod"] = command["signalPeriod"]
-		outfitCommandList[_id]["changeTime"]   = command["changeTime"]
-		outfitCommandList[_id]["startFlag"]    = True
-	else : # command["type"] is Globals.COMMAND_STOP
-		outfitCommandList[_id]["exercise"]     = Globals.EXERCISE_NONE
-		outfitCommandList[_id]["level"]        = 0
-		outfitCommandList[_id]["startFlag"]    = False
+	try :
+		if command["type"] is Globals.COMMAND_START :
+			outfitCommandList[_id]["exercise"]     = command["exercise"]
+			outfitCommandList[_id]["level"]        = command["level"]
+			outfitCommandList[_id]["signalPeriod"] = command["signalPeriod"]
+			outfitCommandList[_id]["changeTime"]   = command["changeTime"]
+			outfitCommandList[_id]["startFlag"]    = True
+		else : # command["type"] is Globals.COMMAND_STOP
+			outfitCommandList[_id]["exercise"]     = Globals.EXERCISE_NONE
+			outfitCommandList[_id]["level"]        = 0
+			outfitCommandList[_id]["startFlag"]    = False
+	except KeyError :
+		pass
 
 def saveResultData(resultDictionary) :
 	# check result log directory
